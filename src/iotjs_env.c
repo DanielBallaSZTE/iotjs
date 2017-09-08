@@ -71,6 +71,7 @@ static void iotjs_environment_initialize(iotjs_environment_t* env) {
   _this->config.memstat = false;
   _this->config.show_opcode = false;
   _this->config.debugger = false;
+  _this->config.debugger_wait_source = false;
   _this->config.debugger_port = 5001;
 }
 
@@ -115,6 +116,8 @@ bool iotjs_environment_parse_command_line_arguments(iotjs_environment_t* env,
       char port[port_length];
       memcpy(&port, argv[i] + port_arg_len, port_length);
       sscanf(port, "%d", &(_this->config.debugger_port));
+    } else if (!strcmp(argv[i], "--jerry-debugger-wait-source")) {
+      _this->config.debugger_wait_source = true;
     } else {
       fprintf(stderr, "unknown command line option: %s\n", argv[i]);
       return false;
@@ -122,8 +125,9 @@ bool iotjs_environment_parse_command_line_arguments(iotjs_environment_t* env,
     ++i;
   }
 
-  // There must be at least one argument after processing the IoT.js args.
-  if ((argc - i) < 1) {
+  // There must be at least one argument after processing the IoT.js args,
+  // except when they are sent over by the debugger client.
+  if ((argc - i) < 1 && !_this->config.debugger_wait_source) {
     fprintf(stderr,
             "Usage: iotjs [options] {script | script.js} [arguments]\n");
     return false;

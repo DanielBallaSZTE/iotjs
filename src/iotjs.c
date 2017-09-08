@@ -58,6 +58,25 @@ static bool iotjs_jerry_initialize(iotjs_environment_t* env) {
     jerry_debugger_init(iotjs_environment_config(env)->debugger_port);
   }
 
+  if (iotjs_environment_config(env)->debugger_wait_source) {
+    jerry_value_t run_result;
+    jerry_debugger_wait_and_run_type_t receive_status;
+
+    do {
+      receive_status = jerry_debugger_wait_and_run_client_source(&run_result);
+
+      if (receive_status == JERRY_DEBUGGER_SOURCE_RECEIVE_FAILED) {
+        fprintf(stderr, "%s", "TODO");
+      }
+
+      if (receive_status == JERRY_DEBUGGER_SOURCE_END) {
+        DLOG("No more client source.");
+      }
+
+      jerry_release_value(run_result);
+    } while (receive_status == JERRY_DEBUGGER_SOURCE_RECEIVED);
+  }
+
   if (iotjs_environment_config(env)->debugger) {
     jerry_debugger_continue();
   }
