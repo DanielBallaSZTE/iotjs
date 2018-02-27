@@ -309,6 +309,11 @@
       "native_files": ["modules/iotjs_module_tcp.c"],
       "init": "InitTcp"
     },
+    "tls": {
+      "native_files": ["modules/iotjs_module_tls.c"],
+      "init": "InitTls",
+      "js_file": "js/tls.js"
+    },
     "testdriver": {
       "native_files": ["modules/iotjs_module_testdriver.c"],
       "init": "InitTestdriver",

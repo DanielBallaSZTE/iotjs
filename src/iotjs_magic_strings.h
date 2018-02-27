@@ -302,5 +302,6 @@
 #if ENABLE_MODULE_HTTPS
 #define IOTJS_MAGIC_STRING__WRITE "_write"
 #endif
+#define IOTJS_MAGIC_STRING_TLSCONNECT "connect"
 
 #endif /* IOTJS_MAGIC_STRINGS_H */
