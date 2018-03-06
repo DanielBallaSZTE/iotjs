@@ -5,7 +5,7 @@
     },
     "iotjs_core_modules": {
       "require": ["buffer", "console", "events", "fs", "module", "process",
-                  "timers"]
+                  "timers", "tls"]
     },
     "adc": {
       "platforms": {
