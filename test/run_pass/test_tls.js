@@ -1,4 +1,4 @@
-/* Copyright 2018-present Samsung Electronics Co., Ltd. and other contributors
+/* Copyright 2017-present Samsung Electronics Co., Ltd. and other contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,82 @@
  * limitations under the License.
  */
 
-var assert = require('assert');
-var tls = require('tls');
-var util = require('util');
+ var tls = require('tls');
+ var assert = require('assert');
+ var fs = require('fs');
 
-assert.assert(util.isFunction(tls.TLSSocket),
-              'tls does not provide \'TLSSocket\' function');
+ var port = 8080;
 
-assert.assert(util.isFunction(tls.connect),
-             'tls does not provide \'connect\' function');
+ var server_closed = false;
+ var expected_client_msg = 'Client hello';
+ var expected_server_msg = 'Server hello';
+ var client_message = '';
+ var server_message = '';
+ var server_handshake_done = false;
 
-assert.assert(util.isFunction(tls.createSecureContext),
-             'tls does not provide \'createSecureContext\' function');
+ var options = {
+   key: fs.readFileSync('../test/resources/my_key.pem').toString(),
+   cert: fs.readFileSync('../test/resources/my_crt.pem').toString(),
+   rejectUnauthorized: false,
+   isServer: true,
+ };
 
-assert.assert(util.isFunction(tls.checkServerIdentity),
-             'tls does not provide \'checkServerIdentity\' function');
+ var server = tls.createServer(options, function(socket) {
+     socket.write('Server hello');
 
-assert.assert(util.isFunction(tls.createServer),
-             'tls does not provide \'createServer\' function');
+     socket.on('data', function(data) {
+       client_message += data.toString();
+     });
+
+ }).listen(port, function() { });
+
+ server.on('secureConnection', function() {
+   server_handshake_done = true;
+ });
+
+ server.on('close', function() {
+   server_closed = true;
+ });
+
+ var error_caught = false;
+ var handshake_done = false;
+
+ var sockOpts = {
+   host: '127.0.0.1',
+   port: 8080,
+   rejectUnauthorized: false,
+ }
+
+ var socket = tls.connect(sockOpts, function() {
+ });
+
+ socket.on('secureConnect', function(){
+   handshake_done = true;
+ });
+
+ socket.on('end', function() {
+   server.close();
+ });
+
+ socket.on('data', function(data) {
+   server_message += data.toString();
+   socket.write('Client hello');
+   socket.end();
+ });
+
+ var socket2 = tls.connect({host: '127.123.123.123', port: 444}, function() {
+   socket2.end();
+ });
+
+ socket2.on('error', function(err) {
+   error_caught = true;
+ });
+
+ process.on('exit', function() {
+   assert.equal(error_caught, true);
+   assert.equal(handshake_done, true);
+   assert.equal(server_handshake_done, true);
+   assert.equal(client_message === expected_client_msg, true);
+   assert.equal(server_message === expected_server_msg, true);
+   assert.equal(server_closed, true);
+ });
