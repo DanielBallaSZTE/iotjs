@@ -232,14 +232,16 @@ JS_FUNCTION(GetAddrInfo) {
 
 #define SET_CONSTANT(object, constant)                           \
   do {                                                           \
-    iotjs_jval_set_property_number(object, #constant, constant); \
+    IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_number(object, #constant, constant)); \
   } while (0)
 
 
 jerry_value_t InitDns() {
   jerry_value_t dns = jerry_create_object();
 
-  iotjs_jval_set_method(dns, IOTJS_MAGIC_STRING_GETADDRINFO, GetAddrInfo);
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(dns, IOTJS_MAGIC_STRING_GETADDRINFO, GetAddrInfo));
   SET_CONSTANT(dns, AI_ADDRCONFIG);
   SET_CONSTANT(dns, AI_V4MAPPED);
 

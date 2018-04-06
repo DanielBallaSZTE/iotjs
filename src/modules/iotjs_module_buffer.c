@@ -627,15 +627,18 @@ JS_FUNCTION(ByteLength) {
 
 jerry_value_t InitBuffer() {
   jerry_value_t buffer = jerry_create_external_function(Buffer);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_BYTELENGTH, ByteLength);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_COMPARE, Compare);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_COPY, Copy);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_WRITE, Write);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_WRITEDECODE, WriteDecode);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_WRITEUINT8, WriteUInt8);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_READUINT8, ReadUInt8);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_SLICE, Slice);
-  iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_TOSTRING, ToString);
+
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_BYTELENGTH, ByteLength));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_COMPARE, Compare));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_COPY, Copy));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_WRITE, Write));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_WRITEDECODE, WriteDecode));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_WRITEUINT8, WriteUInt8));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_READUINT8, ReadUInt8));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_SLICE, Slice));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(buffer, IOTJS_MAGIC_STRING_TOSTRING, ToString));
 
   return buffer;
 }

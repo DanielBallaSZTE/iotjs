@@ -246,39 +246,39 @@ static int iotjs_httpparserwrap_on_headers_complete(http_parser* parser) {
     // Here, there was no flushed header.
     // We need to make a new header object with all header fields
     jerry_value_t jheader = iotjs_httpparserwrap_make_header(httpparserwrap);
-    iotjs_jval_set_property_jval(info, IOTJS_MAGIC_STRING_HEADERS, jheader);
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(info, IOTJS_MAGIC_STRING_HEADERS, jheader));
     jerry_release_value(jheader);
     if (httpparserwrap->parser.type == HTTP_REQUEST) {
       IOTJS_ASSERT(!iotjs_string_is_empty(&httpparserwrap->url));
-      iotjs_jval_set_property_string(info, IOTJS_MAGIC_STRING_URL,
-                                     &httpparserwrap->url);
+      IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string(info, IOTJS_MAGIC_STRING_URL,
+                                     &httpparserwrap->url));
     }
   }
   httpparserwrap->n_fields = httpparserwrap->n_values = 0;
 
   // Method
   if (httpparserwrap->parser.type == HTTP_REQUEST) {
-    iotjs_jval_set_property_number(info, IOTJS_MAGIC_STRING_METHOD,
-                                   httpparserwrap->parser.method);
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_number(info, IOTJS_MAGIC_STRING_METHOD,
+                                   httpparserwrap->parser.method));
   }
   // Status
   else if (httpparserwrap->parser.type == HTTP_RESPONSE) {
-    iotjs_jval_set_property_number(info, IOTJS_MAGIC_STRING_STATUS,
-                                   httpparserwrap->parser.status_code);
-    iotjs_jval_set_property_string(info, IOTJS_MAGIC_STRING_STATUS_MSG,
-                                   &httpparserwrap->status_msg);
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_number(info, IOTJS_MAGIC_STRING_STATUS,
+                                   httpparserwrap->parser.status_code));
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string(info, IOTJS_MAGIC_STRING_STATUS_MSG,
+                                   &httpparserwrap->status_msg));
   }
 
 
   // For future support, current http_server module does not support
   // upgrade and keepalive.
   // upgrade
-  iotjs_jval_set_property_boolean(info, IOTJS_MAGIC_STRING_UPGRADE,
-                                  httpparserwrap->parser.upgrade);
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_boolean(info, IOTJS_MAGIC_STRING_UPGRADE,
+                                  httpparserwrap->parser.upgrade));
   // shouldkeepalive
-  iotjs_jval_set_property_boolean(info, IOTJS_MAGIC_STRING_SHOULDKEEPALIVE,
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_boolean(info, IOTJS_MAGIC_STRING_SHOULDKEEPALIVE,
                                   http_should_keep_alive(
-                                      &httpparserwrap->parser));
+                                      &httpparserwrap->parser)));
 
 
   iotjs_jargs_append_jval(&argv, info);
@@ -360,11 +360,13 @@ static jerry_value_t iotjs_httpparser_return_parserrror(
     http_parser* nativeparser) {
   enum http_errno err = HTTP_PARSER_ERRNO(nativeparser);
 
+  jerry_value_t ret;
+
   jerry_value_t eobj =
       iotjs_jval_create_error_without_error_flag("Parse Error");
-  iotjs_jval_set_property_number(eobj, IOTJS_MAGIC_STRING_BYTEPARSED, 0);
-  iotjs_jval_set_property_string_raw(eobj, IOTJS_MAGIC_STRING_CODE,
-                                     http_errno_name(err));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_number(eobj, IOTJS_MAGIC_STRING_BYTEPARSED, 0));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_string_raw(eobj, IOTJS_MAGIC_STRING_CODE,
+                                     http_errno_name(err)));
   return eobj;
 }
 
@@ -467,34 +469,37 @@ jerry_value_t InitHttpparser() {
   jerry_value_t httpparser = jerry_create_object();
 
   jerry_value_t jParserCons = jerry_create_external_function(HTTPParserCons);
-  iotjs_jval_set_property_jval(httpparser, IOTJS_MAGIC_STRING_HTTPPARSER,
-                               jParserCons);
 
-  iotjs_jval_set_property_number(jParserCons, IOTJS_MAGIC_STRING_REQUEST_U,
-                                 HTTP_REQUEST);
-  iotjs_jval_set_property_number(jParserCons, IOTJS_MAGIC_STRING_RESPONSE_U,
-                                 HTTP_RESPONSE);
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(httpparser, IOTJS_MAGIC_STRING_HTTPPARSER,
+                               jParserCons));
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_number(jParserCons, IOTJS_MAGIC_STRING_REQUEST_U,
+                                 HTTP_REQUEST));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_number(jParserCons, IOTJS_MAGIC_STRING_RESPONSE_U,
+                                 HTTP_RESPONSE));
 
   jerry_value_t methods = jerry_create_object();
 #define V(num, name, string) \
-  iotjs_jval_set_property_string_raw(methods, #num, #string);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_string_raw(methods, #num, #string));
   HTTP_METHOD_MAP(V)
 #undef V
 
-  iotjs_jval_set_property_jval(jParserCons, IOTJS_MAGIC_STRING_METHODS,
-                               methods);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(jParserCons, IOTJS_MAGIC_STRING_METHODS,
+                               methods));
 
   jerry_value_t prototype = jerry_create_object();
 
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_EXECUTE, Execute);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_REINITIALIZE,
-                        Reinitialize);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_FINISH, Finish);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_PAUSE, Pause);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_RESUME, Resume);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_EXECUTE, Execute));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_REINITIALIZE,
+                        Reinitialize));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_FINISH, Finish));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_PAUSE, Pause));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_RESUME, Resume));
 
-  iotjs_jval_set_property_jval(jParserCons, IOTJS_MAGIC_STRING_PROTOTYPE,
-                               prototype);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(jParserCons, IOTJS_MAGIC_STRING_PROTOTYPE,
+                               prototype));
 
   jerry_release_value(jParserCons);
   jerry_release_value(methods);

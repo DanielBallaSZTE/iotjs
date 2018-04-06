@@ -153,7 +153,8 @@ JS_FUNCTION(CompileModule) {
       jerry_release_value(jfunc);
     }
   } else if (!jerry_value_is_undefined(native_module_jval)) {
-    iotjs_jval_set_property_jval(jmodule, "exports", native_module_jval);
+    jerry_value_t ret;
+    IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(jmodule, "exports", native_module_jval));
   } else {
     jres = iotjs_jval_create_error_without_error_flag("Unknown native module");
   }
@@ -234,8 +235,8 @@ JS_FUNCTION(DoExit) {
 
 void SetNativeSources(jerry_value_t native_sources) {
   for (int i = 0; js_modules[i].name; i++) {
-    iotjs_jval_set_property_jval(native_sources, js_modules[i].name,
-                                 jerry_create_boolean(true));
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(native_sources, js_modules[i].name,
+                                 jerry_create_boolean(true)));
   }
 }
 
@@ -266,16 +267,16 @@ static void SetProcessEnv(jerry_value_t process) {
   extra_module_path = getenv(IOTJS_MAGIC_STRING_IOTJS_EXTRA_MODULE_PATH_U);
 
   jerry_value_t env = jerry_create_object();
-  iotjs_jval_set_property_string_raw(env, IOTJS_MAGIC_STRING_HOME_U, homedir);
-  iotjs_jval_set_property_string_raw(env, IOTJS_MAGIC_STRING_IOTJS_PATH_U,
-                                     iotjspath);
-  iotjs_jval_set_property_string_raw(env, IOTJS_MAGIC_STRING_IOTJS_ENV_U,
-                                     iotjsenv);
-  iotjs_jval_set_property_string_raw(
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string_raw(env, IOTJS_MAGIC_STRING_HOME_U, homedir));
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string_raw(env, IOTJS_MAGIC_STRING_IOTJS_PATH_U,
+                                     iotjspath));
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string_raw(env, IOTJS_MAGIC_STRING_IOTJS_ENV_U,
+                                     iotjsenv));
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string_raw(
       env, IOTJS_MAGIC_STRING_IOTJS_EXTRA_MODULE_PATH_U,
-      extra_module_path ? extra_module_path : "");
+      extra_module_path ? extra_module_path : ""));
 
-  iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_ENV, env);
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_ENV, env));
 
   jerry_release_value(env);
 }
@@ -284,10 +285,10 @@ static void SetProcessEnv(jerry_value_t process) {
 static void SetProcessIotjs(jerry_value_t process) {
   // IoT.js specific
   jerry_value_t iotjs = jerry_create_object();
-  iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_IOTJS, iotjs);
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_IOTJS, iotjs));
 
-  iotjs_jval_set_property_string_raw(iotjs, IOTJS_MAGIC_STRING_BOARD,
-                                     TOSTRING(TARGET_BOARD));
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_string_raw(iotjs, IOTJS_MAGIC_STRING_BOARD,
+                                     TOSTRING(TARGET_BOARD)));
   jerry_release_value(iotjs);
 }
 
@@ -304,7 +305,7 @@ static void SetProcessArgv(jerry_value_t process) {
     iotjs_jval_set_property_by_index(argv, i, arg);
     jerry_release_value(arg);
   }
-  iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_ARGV, argv);
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_ARGV, argv));
 
   jerry_release_value(argv);
 }
@@ -312,12 +313,12 @@ static void SetProcessArgv(jerry_value_t process) {
 
 static void SetBuiltinModules(jerry_value_t builtin_modules) {
   for (unsigned i = 0; js_modules[i].name; i++) {
-    iotjs_jval_set_property_jval(builtin_modules, js_modules[i].name,
-                                 jerry_create_boolean(true));
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(builtin_modules, js_modules[i].name,
+                                 jerry_create_boolean(true)));
   }
   for (unsigned i = 0; i < iotjs_module_count; i++) {
-    iotjs_jval_set_property_jval(builtin_modules, iotjs_module_ro_data[i].name,
-                                 jerry_create_boolean(true));
+    IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_jval(builtin_modules, iotjs_module_ro_data[i].name,
+                                 jerry_create_boolean(true)));
   }
 }
 
@@ -325,35 +326,37 @@ static void SetBuiltinModules(jerry_value_t builtin_modules) {
 jerry_value_t InitProcess() {
   jerry_value_t process = jerry_create_object();
 
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_COMPILE, Compile);
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_COMPILEMODULE,
-                        CompileModule);
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_READSOURCE, ReadSource);
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_CWD, Cwd);
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_CHDIR, Chdir);
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_DEBUGGERGETSOURCE,
-                        DebuggerGetSource);
-  iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_DOEXIT, DoExit);
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_COMPILE, Compile));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_COMPILEMODULE,
+                        CompileModule));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_READSOURCE, ReadSource));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_CWD, Cwd));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_CHDIR, Chdir));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_DEBUGGERGETSOURCE,
+                        DebuggerGetSource));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_DOEXIT, DoExit));
   SetProcessEnv(process);
 
   // process.builtin_modules
   jerry_value_t builtin_modules = jerry_create_object();
   SetBuiltinModules(builtin_modules);
-  iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_BUILTIN_MODULES,
-                               builtin_modules);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_BUILTIN_MODULES,
+                               builtin_modules));
   jerry_release_value(builtin_modules);
 
   // process.platform
-  iotjs_jval_set_property_string_raw(process, IOTJS_MAGIC_STRING_PLATFORM,
-                                     TARGET_OS);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_string_raw(process, IOTJS_MAGIC_STRING_PLATFORM,
+                                     TARGET_OS));
 
   // process.arch
-  iotjs_jval_set_property_string_raw(process, IOTJS_MAGIC_STRING_ARCH,
-                                     TARGET_ARCH);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_string_raw(process, IOTJS_MAGIC_STRING_ARCH,
+                                     TARGET_ARCH));
 
   // process.version
-  iotjs_jval_set_property_string_raw(process, IOTJS_MAGIC_STRING_VERSION,
-                                     IOTJS_VERSION);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_string_raw(process, IOTJS_MAGIC_STRING_VERSION,
+                                     IOTJS_VERSION));
 
   // Set iotjs
   SetProcessIotjs(process);
@@ -370,8 +373,8 @@ jerry_value_t InitProcess() {
   }
 
   jerry_value_t wait_source_val = jerry_create_boolean(wait_source);
-  iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_DEBUGGERWAITSOURCE,
-                               wait_source_val);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(process, IOTJS_MAGIC_STRING_DEBUGGERWAITSOURCE,
+                               wait_source_val));
   jerry_release_value(wait_source_val);
 
   return process;

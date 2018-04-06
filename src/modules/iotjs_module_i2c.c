@@ -171,15 +171,17 @@ jerry_value_t InitI2c() {
 
   jerry_value_t prototype = jerry_create_object();
 
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_CLOSE, Close);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_CLOSESYNC, CloseSync);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_WRITE, Write);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_WRITESYNC, WriteSync);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_READ, Read);
-  iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_READSYNC, ReadSync);
+  jerry_value_t ret;
 
-  iotjs_jval_set_property_jval(ji2c_cons, IOTJS_MAGIC_STRING_PROTOTYPE,
-                               prototype);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_CLOSE, Close));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_CLOSESYNC, CloseSync));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_WRITE, Write));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_WRITESYNC, WriteSync));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_READ, Read));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(prototype, IOTJS_MAGIC_STRING_READSYNC, ReadSync));
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(ji2c_cons, IOTJS_MAGIC_STRING_PROTOTYPE,
+                               prototype));
 
   jerry_release_value(prototype);
 

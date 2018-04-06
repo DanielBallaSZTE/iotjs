@@ -126,13 +126,17 @@ jerry_value_t InitAdc() {
   jerry_value_t jadc_cons = jerry_create_external_function(AdcCons);
   jerry_value_t jprototype = jerry_create_object();
 
-  iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_READ, Read);
-  iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_READSYNC, ReadSync);
-  iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_CLOSE, Close);
-  iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_CLOSESYNC, CloseSync);
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_READ, Read));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_READSYNC, ReadSync));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_CLOSE, Close));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(jprototype, IOTJS_MAGIC_STRING_CLOSESYNC, CloseSync));
 
   iotjs_jval_set_property_jval(jadc_cons, IOTJS_MAGIC_STRING_PROTOTYPE,
                                jprototype);
+
+  jerry_release_value(ret);
 
   jerry_release_value(jprototype);
 

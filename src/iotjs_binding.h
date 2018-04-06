@@ -42,20 +42,20 @@ jerry_value_t iotjs_jval_as_array(jerry_value_t);
 jerry_value_t iotjs_jval_as_function(jerry_value_t);
 
 /* Methods for General JavaScript Object */
-void iotjs_jval_set_method(jerry_value_t jobj, const char* name,
+jerry_value_t iotjs_jval_set_method(jerry_value_t jobj, const char* name,
                            jerry_external_handler_t handler);
 bool iotjs_jval_set_prototype(jerry_value_t jobj, jerry_value_t jproto);
-void iotjs_jval_set_property_jval(jerry_value_t jobj, const char* name,
+jerry_value_t iotjs_jval_set_property_jval(jerry_value_t jobj, const char* name,
                                   jerry_value_t value);
-void iotjs_jval_set_property_null(jerry_value_t jobj, const char* name);
-void iotjs_jval_set_property_undefined(jerry_value_t jobj, const char* name);
-void iotjs_jval_set_property_boolean(jerry_value_t jobj, const char* name,
+jerry_value_t iotjs_jval_set_property_null(jerry_value_t jobj, const char* name);
+jerry_value_t iotjs_jval_set_property_undefined(jerry_value_t jobj, const char* name);
+jerry_value_t iotjs_jval_set_property_boolean(jerry_value_t jobj, const char* name,
                                      bool v);
-void iotjs_jval_set_property_number(jerry_value_t jobj, const char* name,
+jerry_value_t iotjs_jval_set_property_number(jerry_value_t jobj, const char* name,
                                     double v);
-void iotjs_jval_set_property_string(jerry_value_t jobj, const char* name,
+jerry_value_t iotjs_jval_set_property_string(jerry_value_t jobj, const char* name,
                                     const iotjs_string_t* v);
-void iotjs_jval_set_property_string_raw(jerry_value_t jobj, const char* name,
+jerry_value_t iotjs_jval_set_property_string_raw(jerry_value_t jobj, const char* name,
                                         const char* v);
 
 jerry_value_t iotjs_jval_get_property(jerry_value_t jobj, const char* name);
@@ -216,6 +216,21 @@ jerry_value_t iotjs_jhelper_eval(const char* name, size_t name_len,
     __JS_GET_REQUIRED_VALUE(target, property, type, jtmp);       \
     jerry_release_value(jtmp);                                   \
   } while (0)
+
+
+#define IOTJS_JVAL_SET_CHECKER(ret, func)  \
+  do {                                     \
+    ret = func;                            \
+    if (jerry_value_has_error_flag(ret)) { \
+      return ret;                          \
+    }                                      \
+    jerry_release_value(ret);              \
+  } while(0)
+
+#define IOTJS_JVAL_SET_VOID(func) \
+  do {                            \
+    jerry_release_value(func);    \
+  } while(0)
 
 jerry_value_t vm_exec_stop_callback(void* user_p);
 

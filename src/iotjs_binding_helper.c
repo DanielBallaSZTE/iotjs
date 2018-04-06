@@ -158,5 +158,5 @@ int iotjs_process_exitcode() {
 
 void iotjs_set_process_exitcode(int code) {
   const jerry_value_t process = iotjs_module_get("process");
-  iotjs_jval_set_property_number(process, IOTJS_MAGIC_STRING_EXITCODE, code);
+  IOTJS_JVAL_SET_VOID(iotjs_jval_set_property_number(process, IOTJS_MAGIC_STRING_EXITCODE, code));
 }

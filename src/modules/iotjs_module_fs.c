@@ -314,9 +314,10 @@ jerry_value_t MakeStatObject(uv_stat_t* statbuf) {
 
   jerry_release_value(stat_prototype);
 
+  jerry_value_t ret;
 
 #define X(statobj, name) \
-  iotjs_jval_set_property_number(statobj, #name, statbuf->st_##name);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_number(statobj, #name, statbuf->st_##name));
 
   X(jstat, dev)
   X(jstat, mode)
@@ -514,26 +515,28 @@ JS_FUNCTION(StatsIsFile) {
 jerry_value_t InitFs() {
   jerry_value_t fs = jerry_create_object();
 
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_CLOSE, Close);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_OPEN, Open);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_READ, Read);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_WRITE, Write);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_STAT, Stat);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_FSTAT, Fstat);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_MKDIR, MkDir);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_RMDIR, RmDir);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_UNLINK, Unlink);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_RENAME, Rename);
-  iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_READDIR, ReadDir);
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_CLOSE, Close));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_OPEN, Open));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_READ, Read));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_WRITE, Write));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_STAT, Stat));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_FSTAT, Fstat));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_MKDIR, MkDir));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_RMDIR, RmDir));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_UNLINK, Unlink));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_RENAME, Rename));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(fs, IOTJS_MAGIC_STRING_READDIR, ReadDir));
 
   jerry_value_t stats_prototype = jerry_create_object();
 
-  iotjs_jval_set_method(stats_prototype, IOTJS_MAGIC_STRING_ISDIRECTORY,
-                        StatsIsDirectory);
-  iotjs_jval_set_method(stats_prototype, IOTJS_MAGIC_STRING_ISFILE,
-                        StatsIsFile);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(stats_prototype, IOTJS_MAGIC_STRING_ISDIRECTORY,
+                        StatsIsDirectory));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(stats_prototype, IOTJS_MAGIC_STRING_ISFILE,
+                        StatsIsFile));
 
-  iotjs_jval_set_property_jval(fs, IOTJS_MAGIC_STRING_STATS, stats_prototype);
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_property_jval(fs, IOTJS_MAGIC_STRING_STATS, stats_prototype));
   jerry_release_value(stats_prototype);
 
   return fs;

@@ -57,8 +57,10 @@ JS_FUNCTION(Stderr) {
 jerry_value_t InitConsole() {
   jerry_value_t console = jerry_create_object();
 
-  iotjs_jval_set_method(console, IOTJS_MAGIC_STRING_STDOUT, Stdout);
-  iotjs_jval_set_method(console, IOTJS_MAGIC_STRING_STDERR, Stderr);
+  jerry_value_t ret;
+
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(console, IOTJS_MAGIC_STRING_STDOUT, Stdout));
+  IOTJS_JVAL_SET_CHECKER(ret, iotjs_jval_set_method(console, IOTJS_MAGIC_STRING_STDERR, Stderr));
 
   return console;
 }
