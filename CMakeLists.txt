@@ -165,5 +165,6 @@ include(ExternalProject)
 include(cmake/jerry.cmake)
 include(cmake/http-parser.cmake)
 include(cmake/libtuv.cmake)
+include(cmake/libmqtt.cmake)
 
 include(cmake/iotjs.cmake)

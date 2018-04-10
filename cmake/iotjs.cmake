@@ -425,6 +425,7 @@ set(IOTJS_INCLUDE_DIRS
   ${JERRY_INCLUDE_DIR}
   ${HTTPPARSER_INCLUDE_DIR}
   ${MBEDTLS_INCLUDE_DIR}
+  ${MQTT_INCLUDE_DIR}
   ${TUV_INCLUDE_DIR}
 )
 
@@ -475,6 +476,7 @@ target_link_libraries(${TARGET_LIB_IOTJS}
   ${TUV_LIBS}
   libhttp-parser
   ${MBEDTLS_LIBS}
+  ${MQTT_LIBS}
   ${EXTERNAL_LIBS}
 )
 
