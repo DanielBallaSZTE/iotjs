@@ -182,4 +182,10 @@ typedef struct {
   unsigned char **topic_filters; // uint16_t lenght needs to be before this field
 } iotjs_mqtt_message_unsubscribe_t;
 
+typedef struct {
+  char *host;
+  uint8_t port;
+  uint8_t keep_alive;
+} iotjs_mqtt_client_t;
+
 #endif /* IOTJS_MODULE_MQTT_H */
