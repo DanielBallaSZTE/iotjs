@@ -20,63 +20,42 @@ var eventEmitter = require('events').EventEmitter;
 
 util.inherits(MQTTClient, EventEmitter);
 
-function MQTTClient(_path, options) {
+function MQTTClient(path, options) {
   EventEmitter.call(this);
 
-  var path = URL.parse(_path);
-  this._host = path.hostname;
-  this._port = Number(path.port) || 1883;
-  this._protocol = path.protocol;
-
-  this._options = Object.assign({
-    username: null,
-    password: null,
-    clientId: defaultClientId(),
-    keepalive: 60 * 1000,
-    reconnectPeriod: 5000,
-    connectTimeout: 30 * 1000,
-    resubscribe: true,
-    protocolId: 'MQTT',
-    protocolVersion: 4,
-  }, options);
+  path = URL.parse(path);
+  this._clientOptions = Object.create(options, {
+    host: path.hostname,
+    port: Number(path.port) || 1883,
+    protocol: path.protocol,
+    clientId: defaultClientId()
+  });
 
   this._isConnected = false;
   this._reconnecting = false;
-  this._reconnectingTimer = null;
-  this._lastConnectTime = 0;
   this._messageId = 0;
-  this._ttl = null;
 }
 
 /*
  * Connect to an MQTT broker.
  */
 MQTTClient.prototype.connect = function() {
-  var connectionOptions = Object.assign({
-    port: this._port,
-    host: this._host
-  }, this._options);
-
   if(this._protocol === 'tls:') {
     var tls = require('tls');
-    this._socket = tls.connect(connectionOptions, this._onConnect.bind(this));
+    this._socket = tls.connect(this._clientOptions, this.onconnect);
   } else {
-    this._socket = net.connect(connectionOptions, this._onConnect.bind(this));
+    this._socket = net.connect(this._clientOptions, this.onconnect);
   }
 
-  this._socket.on('data', this._onData.bind(this));
-  this._socket.on('error', this._onDisconnect.bind(this));
-  this._socket.on('end', this._onDisconnect.bind(this));
-  this._lastConnectTime = Date.now();
+  this._socket.on('data', this.ondata);
+  this._socket.on('error', this.ondisconnect);
+  this._socket.on('end', this.ondisconnect);
 }
 
 MQTTClient.prototype.disconnect = function(error) {
   if(error) {
     this.emit('error', error);
   }
-
-  clearTimeout(this._ttl);
-  clearTimeout(this._reconnectingTimer);
 
   this._isConnected = false;
   this._socket.end();
@@ -88,46 +67,44 @@ MQTTClient.prototype.reconnect = function() {
   }
 
   this.disconnect();
-  // Delay the connection.
-  this.connect();
+  setTimeout(this.connect, this._options.reconnectPeriod);
 }
 
-MQTTClient.prototype._onConnect = function() {
+MQTTClient.prototype.onconnect = function() {
   this._isConnected = true;
-  // ...
+  native.MQTTInit(this, this._clientOptions);
 }
 
-MQTTClient.prototype._onDisconnect = function(error) {
+MQTTClient.prototype.ondisconnect = function(error) {
   if(error) {
     this.emit('error', error);
   }
-
+  // ... Native buffer releases.
   this._isConnected = false;
   this.emit('offline');
-
 }
 
-MQTTClient.prototype._onData = function() {
-
+MQTTClient.prototype.ondata = function() {
+  // ... Native handle.
 }
 
 MQTTClient.prototype.publish = function() {
-
+  // ... Native handle.
 }
 
 MQTTClient.prototype.subscribe = function() {
-
+  // ... Native handle.
 }
 
-MQTTClient.prototype.unSubscribe = function() {
-  
+MQTTClient.prototype.unsubscribe = function() {
+  // ... Native handle.
 }
 
 /*
  * Returns an unique client ID based on current time.
  */
 function defaultClientId() {
-  return "iotjs_mqtt_client_" + new Date().getTime();
+  return "iotjs_mqtt_client_" + Date.now();
 }
 
 var noop = function() {}

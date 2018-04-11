@@ -105,6 +105,7 @@ typedef struct {
   unsigned char *will_topic;
   unsigned char *will_message;
   unsigned char *user_name;
+  uint16_t password_lenght;
   unsigned char *password; // uint16_t lenght needs to be before this field.
 } iotjs_mqtt_message_connect_t;
 
@@ -128,10 +129,13 @@ typedef struct {
 typedef struct {
   iotjs_mqtt_fixed_header_t fixed_header;
 
+
+  uint16_t topic_lenght;
   unsigned char *topic_name; // uint16_t lenght needs to be before this field.
   uint16_t packet_identifier;
 
   // Payload
+  uint16_t payload_lenght;
   unsigned char *message;
 } iotjs_mqtt_message_publish_t;
 
@@ -154,7 +158,8 @@ typedef struct {
   uint16_t packet_identifier;
 
   // Payload
-  unsigned char **topic_filters; // uint16_t lenght needs to be before this field
+  uint16_t payload_lenght;
+  unsigned char *topic_filters; // uint16_t lenght needs to be before this field
   uint8_t requested_qoss[];
 } iotjs_mqtt_message_subscribe_t;
 
@@ -179,13 +184,16 @@ typedef struct {
   uint16_t packet_identifier;
 
   // Payload
-  unsigned char **topic_filters; // uint16_t lenght needs to be before this field
+  uint16_t payload_lenght;
+  unsigned char *topic_filters; // uint16_t lenght needs to be before this field
 } iotjs_mqtt_message_unsubscribe_t;
 
 typedef struct {
-  char *host;
-  uint8_t port;
-  uint8_t keep_alive;
+  char *client_id;
+  unsigned char protocol[4]; // value: 'MQTT'
+  uint8_t protocol_level;    // value: 4
+  uint16_t keep_alive;       // value: 60.000 (60 s)
+  uint16_t reconnect_period; // value: 5.000 (5 s)
 } iotjs_mqtt_client_t;
 
 #endif /* IOTJS_MODULE_MQTT_H */
