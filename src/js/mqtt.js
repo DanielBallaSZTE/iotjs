@@ -16,20 +16,28 @@
 var net = require('net');
 var URL = require('url');
 var util = require('util');
-var eventEmitter = require('events').EventEmitter;
+var EventEmitter = require('events').EventEmitter;
 
 util.inherits(MQTTClient, EventEmitter);
 
-function MQTTClient(path, options) {
+function MQTTClient(options) {
+  if (!(this instanceof MQTTClient)) {
+    return new MQTTClient(options);
+  }
+
   EventEmitter.call(this);
 
-  path = URL.parse(path);
+  this._protocol = 'net';
+
   this._clientOptions = Object.create(options, {
-    host: path.hostname,
-    port: Number(path.port) || 1883,
-    protocol: path.protocol,
-    clientId: defaultClientId()
+    host: { value: options.host || "127.0.0.1"},
+    port: { value: options.port || 8883 },
+    // clientId: defaultClientId()
   });
+
+  this._socket = new net.Socket();
+
+  native.MqttInit();
 
   this._isConnected = false;
   this._reconnecting = false;
@@ -39,6 +47,13 @@ function MQTTClient(path, options) {
 /*
  * Connect to an MQTT broker.
  */
+
+function MqttConnect(socket) {
+  var buff = native.connect()
+  console.log(buff);
+  socket.write(buff);
+}
+
 MQTTClient.prototype.connect = function() {
   if(this._protocol === 'tls:') {
     var tls = require('tls');
@@ -47,8 +62,13 @@ MQTTClient.prototype.connect = function() {
     this._socket = net.connect(this._clientOptions, this.onconnect);
   }
 
+  this._socket.on('connect', function() {
+    MqttConnect(this);
+  });
   this._socket.on('data', this.ondata);
-  this._socket.on('error', this.ondisconnect);
+  this._socket.on('error', function(e) {
+    console.log("error: " + e);
+  });
   this._socket.on('end', this.ondisconnect);
 }
 
@@ -72,7 +92,7 @@ MQTTClient.prototype.reconnect = function() {
 
 MQTTClient.prototype.onconnect = function() {
   this._isConnected = true;
-  native.MQTTInit(this, this._clientOptions);
+  
 }
 
 MQTTClient.prototype.ondisconnect = function(error) {
@@ -109,8 +129,8 @@ function defaultClientId() {
 
 var noop = function() {}
 
-function getClient(path, connectionOptions) {
-  return new MQTTClient(path, connectionOptions);
+function getClient(connectionOptions) {
+  return MQTTClient(connectionOptions);
 }
 
-module.exports = getClient;
+exports.getClient = getClient;

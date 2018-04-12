@@ -323,5 +323,8 @@
 #if ENABLE_MODULE_HTTPS
 #define IOTJS_MAGIC_STRING__WRITE "_write"
 #endif
+#if ENABLE_MODULE_MQTT
+#define IOTJS_MAGIC_STRING_MQTTINIT "MqttInit"
+#endif
 
 #endif /* IOTJS_MAGIC_STRINGS_H */

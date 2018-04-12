@@ -56,9 +56,9 @@ enum {
  */
 typedef struct {
   unsigned char packet_type : 4;
-  bool DUP : 1;          // Duplicate delivery of PUBLISH Control Packet.
+  uint8_t DUP : 1;          // Duplicate delivery of PUBLISH Control Packet.
   unsigned char QoS : 2; // PUBLISH Quality of Service.
-  bool RETAIN : 1;       // PUBLISH Retain flag.
+  uint8_t RETAIN : 1;       // PUBLISH Retain flag.
 } iotjs_mqtt_control_packet_t;
 
 /*
@@ -66,7 +66,7 @@ typedef struct {
  */
 typedef struct {
   iotjs_mqtt_control_packet_t packet;
-  unsigned char remaining_lenght;
+  unsigned char remaining_length;
 } iotjs_mqtt_fixed_header_t;
 
 /*
@@ -83,30 +83,32 @@ typedef struct {
 typedef struct {
   iotjs_mqtt_fixed_header_t fixed_header;
 
-  uint16_t lenght; // 1 - 2; the value must be 4
+  uint8_t length_msb; // always 0
+  uint8_t length_lsb; // always 4
   unsigned char protocol[4]; // 3 - 6
   uint8_t protocol_level; // 7; value must be 4
 
   struct {
-    bool user_name : 1;
-    bool password  : 1;
-    bool will_retain : 1;
-    unsigned char will_QoS : 2;
-    bool will : 1;
-    bool clean_session : 1;
+    uint8_t user_name : 1;
+    uint8_t password  : 1;
+    uint8_t will_retain : 1;
+    uint8_t will_QoS : 2;
+    uint8_t will_flag : 1;
+    uint8_t clean_session : 1;
 
-    int : 1; // Reserved and it's value must be set to 0.
+    uint8_t reserved : 1; // Reserved and it's value must be set to 0.
   } connect_flags;
 
-  uint16_t keep_alive;
+  uint8_t keep_alive_msb;
+  uint8_t kepp_alive_lsb;
 
   // Payload
-  unsigned char *client_identifier;
-  unsigned char *will_topic;
-  unsigned char *will_message;
-  unsigned char *user_name;
-  uint16_t password_lenght;
-  unsigned char *password; // uint16_t lenght needs to be before this field.
+  // unsigned char *client_identifier;
+  // unsigned char *will_topic;
+  // unsigned char *will_message;
+  // unsigned char *user_name;
+  // uint16_t password_length;
+  // unsigned char *password; // uint16_t lenght needs to be before this field.
 } iotjs_mqtt_message_connect_t;
 
 /*
@@ -130,12 +132,12 @@ typedef struct {
   iotjs_mqtt_fixed_header_t fixed_header;
 
 
-  uint16_t topic_lenght;
+  uint16_t topic_length;
   unsigned char *topic_name; // uint16_t lenght needs to be before this field.
   uint16_t packet_identifier;
 
   // Payload
-  uint16_t payload_lenght;
+  uint16_t payload_length;
   unsigned char *message;
 } iotjs_mqtt_message_publish_t;
 
@@ -158,7 +160,7 @@ typedef struct {
   uint16_t packet_identifier;
 
   // Payload
-  uint16_t payload_lenght;
+  uint16_t payload_length;
   unsigned char *topic_filters; // uint16_t lenght needs to be before this field
   uint8_t requested_qoss[];
 } iotjs_mqtt_message_subscribe_t;
@@ -184,7 +186,7 @@ typedef struct {
   uint16_t packet_identifier;
 
   // Payload
-  uint16_t payload_lenght;
+  uint16_t payload_length;
   unsigned char *topic_filters; // uint16_t lenght needs to be before this field
 } iotjs_mqtt_message_unsubscribe_t;
 
