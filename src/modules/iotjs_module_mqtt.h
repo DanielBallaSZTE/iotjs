@@ -55,10 +55,16 @@ enum {
  * - Specific flags to each MQTT Control Packet.
  */
 typedef struct {
+
+#ifdef MQTT_REVERSED
   unsigned char packet_type : 4;
-  uint8_t DUP : 1;          // Duplicate delivery of PUBLISH Control Packet.
-  unsigned char QoS : 2; // PUBLISH Quality of Service.
-  uint8_t RETAIN : 1;       // PUBLISH Retain flag.
+  uint8_t DUP : 1;                // Duplicate delivery of PUBLISH Control Packet.
+  unsigned char QoS : 2;          // PUBLISH Quality of Service.
+  uint8_t RETAIN : 1;             // PUBLISH Retain flag.
+#else
+  uint8_t reserved : 4;
+  unsigned char packet_type : 4;
+#endif
 } iotjs_mqtt_control_packet_t;
 
 /*
@@ -66,7 +72,7 @@ typedef struct {
  */
 typedef struct {
   iotjs_mqtt_control_packet_t packet;
-  unsigned char remaining_length;
+  uint8_t remaining_length;
 } iotjs_mqtt_fixed_header_t;
 
 /*
@@ -80,36 +86,60 @@ typedef struct {
 /*
  * Type of the MQTT CONNECT message.
  */
-typedef struct {
-  iotjs_mqtt_fixed_header_t fixed_header;
 
-  uint8_t length_msb; // always 0
-  uint8_t length_lsb; // always 4
-  unsigned char protocol[4]; // 3 - 6
-  uint8_t protocol_level; // 7; value must be 4
+typedef union {
+  unsigned char byte;
 
   struct {
-    uint8_t user_name : 1;
-    uint8_t password  : 1;
-    uint8_t will_retain : 1;
-    uint8_t will_QoS : 2;
-    uint8_t will_flag : 1;
-    uint8_t clean_session : 1;
+    uint8_t retain : 1;
+    uint8_t qos : 2;
+    uint8_t dup : 1;
+    uint8_t type : 4;
+  } bits;
+} MQTTHeader;
 
-    uint8_t reserved : 1; // Reserved and it's value must be set to 0.
-  } connect_flags;
+enum {
+  // Reserved bit, must be 0
+  FLAG_RESERVED = 1 << 0,
+  // Clean session bit
+  FLAG_CLEANSESSION = 1 << 1,
+  /**
+   * If the will flag is set to 1 Will QoS and Will Retain flags must be
+   * also set to 1, and be present in the payload. Otherwise, both must be set
+   * to 0.
+   */
+  FLAG_WILL = 1 << 2,
+  /**
+   * QoS can only be set, if the Will flag is set to 1. Otherwise it's 0x00.
+   * QoS types are as follows:
+   * Type 0: Both QoS bits are set to 0 (0x00)
+   * Type 1: WILLQOS_1 is set to 1, WILLQOS_2 is set to 0 (0x01)
+   * Type 3: WILLQOS_2 is set to 1, WILLQOS_1 is set to 0 (0x02)
+   */
+  FLAG_WILLQOS_2 = 1 << 3,
+  FLAG_WILLQOS_1 = 1 << 4,
+  /**
+   * Will retain flag can only be set to 1 if Will flag is set to 1 as well.
+   * If retain is set to 1, the server must publish will message as a retained
+   * message.
+   */
+  FLAG_WILLRETAIN = 1 << 5,
+  // Whether password is sent by the user
+  FLAG_PASSWORD = 1 << 6,
+  // Whether username is sent
+  FLAG_USERNAME = 1 << 7
+} iotjs_mqtt_connect_flag_t;
 
-  uint8_t keep_alive_msb;
-  uint8_t kepp_alive_lsb;
+typedef struct {
+  struct {
+    uint8_t msb;
+    uint8_t lsb;
+    char *buffer;
+  } data;
 
-  // Payload
-  // unsigned char *client_identifier;
-  // unsigned char *will_topic;
-  // unsigned char *will_message;
-  // unsigned char *user_name;
-  // uint16_t password_length;
-  // unsigned char *password; // uint16_t lenght needs to be before this field.
-} iotjs_mqtt_message_connect_t;
+  size_t size;
+  size_t buffer_size;
+} iotjs_mqtt_payload_t;
 
 /*
  * Type of the MQTT CONNACK message.

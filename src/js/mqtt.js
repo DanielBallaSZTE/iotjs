@@ -32,7 +32,6 @@ function MQTTClient(options) {
   this._clientOptions = Object.create(options, {
     host: { value: options.host || "127.0.0.1"},
     port: { value: options.port || 8883 },
-    // clientId: defaultClientId()
   });
 
   this._socket = new net.Socket();
@@ -48,13 +47,14 @@ function MQTTClient(options) {
  * Connect to an MQTT broker.
  */
 
-function MqttConnect(socket) {
-  var buff = native.connect()
-  console.log(buff);
+function MqttConnect(socket, options) {
+  var buff = native.connect(options);
   socket.write(buff);
 }
 
 MQTTClient.prototype.connect = function() {
+  var jsref = this;
+
   if(this._protocol === 'tls:') {
     var tls = require('tls');
     this._socket = tls.connect(this._clientOptions, this.onconnect);
@@ -63,7 +63,7 @@ MQTTClient.prototype.connect = function() {
   }
 
   this._socket.on('connect', function() {
-    MqttConnect(this);
+    MqttConnect(this, jsref._clientOptions);
   });
   this._socket.on('data', this.ondata);
   this._socket.on('error', function(e) {
@@ -92,7 +92,7 @@ MQTTClient.prototype.reconnect = function() {
 
 MQTTClient.prototype.onconnect = function() {
   this._isConnected = true;
-  
+
 }
 
 MQTTClient.prototype.ondisconnect = function(error) {
