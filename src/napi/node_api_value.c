@@ -20,19 +20,27 @@
 
 #include <math.h>
 
+napi_status napi_assign_bool(bool value, bool* result) {
+  NAPI_ASSIGN(result, value);
+  NAPI_RETURN(napi_ok);
+}
+
+napi_status napi_assign_nvalue(jerry_value_t jvalue, napi_value* nvalue) {
+  NAPI_ASSIGN(nvalue, AS_NAPI_VALUE(jvalue));
+  NAPI_RETURN(napi_ok);
+}
+
 napi_status napi_create_array(napi_env env, napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_array(0));
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_create_array_with_length(napi_env env, size_t length,
                                           napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_array(length));
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_create_buffer(napi_env env, size_t size, void** data,
@@ -42,9 +50,8 @@ napi_status napi_create_buffer(napi_env env, size_t size, void** data,
   iotjs_bufferwrap_t* buf_wrap = iotjs_bufferwrap_from_jbuffer(jval_buf);
 
   NAPI_ASSIGN(data, buf_wrap->buffer);
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval_buf));
 
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval_buf, result);
 }
 
 napi_status napi_create_buffer_copy(napi_env env, size_t size, const void* data,
@@ -78,8 +85,7 @@ napi_status napi_create_external_buffer(napi_env env, size_t length, void* data,
 napi_status napi_create_object(napi_env env, napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_object());
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 static napi_status napi_create_error_helper(jerry_error_t jerry_error_type,
@@ -136,8 +142,7 @@ static napi_status napi_number_convert_from_c_type_helper(napi_env env,
                                                           napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_number(value));
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 #define DEF_NAPI_NUMBER_CONVERT_FROM_C_TYPE(type, name)                        \
@@ -188,8 +193,7 @@ napi_status napi_create_string_utf8(napi_env env, const char* str,
   }
   JERRYX_CREATE(jval,
                 jerry_create_string_sz_from_utf8((jerry_char_t*)str, length));
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_get_array_length(napi_env env, napi_value value,
@@ -216,31 +220,20 @@ napi_status napi_get_prototype(napi_env env, napi_value object,
   NAPI_TRY_ENV(env);
   jerry_value_t jval = AS_JERRY_VALUE(object);
   JERRYX_CREATE(jval_proto, jerry_get_prototype(jval));
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval_proto));
-  NAPI_RETURN(napi_ok);
-}
-
-napi_status napi_get_value_external(napi_env env, napi_value value,
-                                    void** result) {
-  NAPI_TRY_ENV(env);
-  iotjs_object_info_t* info = NAPI_GET_OBJECT_INFO(AS_JERRY_VALUE(value));
-  NAPI_ASSIGN(result, info->native_object);
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval_proto, result);
 }
 
 napi_status napi_get_value_bool(napi_env env, napi_value value, bool* result) {
   NAPI_TRY_ENV(env);
   jerry_value_t jval = AS_JERRY_VALUE(value);
   NAPI_TRY_TYPE(boolean, jval);
-  NAPI_ASSIGN(result, jerry_get_boolean_value(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_bool(jerry_get_boolean_value(jval), result);
 }
 
 napi_status napi_get_boolean(napi_env env, bool value, napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_boolean(value));
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_get_value_string_utf8(napi_env env, napi_value value,
@@ -273,22 +266,19 @@ napi_status napi_get_value_string_utf8(napi_env env, napi_value value,
 napi_status napi_get_global(napi_env env, napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_get_global_object());
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_get_null(napi_env env, napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_null());
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_get_undefined(napi_env env, napi_value* result) {
   NAPI_TRY_ENV(env);
   JERRYX_CREATE(jval, jerry_create_undefined());
-  NAPI_ASSIGN(result, AS_NAPI_VALUE(jval));
-  NAPI_RETURN(napi_ok);
+  return napi_assign_nvalue(jval, result);
 }
 
 napi_status napi_coerce_to_bool(napi_env env, napi_value value,
@@ -307,8 +297,7 @@ napi_status napi_coerce_to_bool(napi_env env, napi_value value,
     NAPI_TRY_ENV(env);                                              \
     jerry_value_t jval = AS_JERRY_VALUE(value);                     \
     JERRYX_CREATE(jval_result, jerry_value_to_##alias(jval));       \
-    NAPI_ASSIGN(result, AS_NAPI_VALUE(jval_result));                \
-    NAPI_RETURN(napi_ok);                                           \
+    return napi_assign_nvalue(jval_result, result);                 \
   }
 
 DEF_NAPI_COERCE_TO(number, number);
@@ -359,21 +348,15 @@ napi_status napi_typeof(napi_env env, napi_value value,
   NAPI_RETURN(napi_ok);
 }
 
-static napi_status napi_assign_bool(napi_env env, bool value, bool* result) {
-  NAPI_TRY_ENV(env);
-  NAPI_ASSIGN(result, value);
-  NAPI_RETURN(napi_ok);
-}
-
-#define DEF_NAPI_VALUE_IS(type)                                                \
-  napi_status napi_is_##type(napi_env env, napi_value value, bool* result) {   \
-    return napi_assign_bool(env, jerry_value_is_##type(AS_JERRY_VALUE(value)), \
-                            result);                                           \
+#define DEF_NAPI_VALUE_IS(type)                                              \
+  napi_status napi_is_##type(napi_env env, napi_value value, bool* result) { \
+    NAPI_TRY_ENV(env);                                                       \
+    return napi_assign_bool(jerry_value_is_##type(AS_JERRY_VALUE(value)),    \
+                            result);                                         \
   }
 
 DEF_NAPI_VALUE_IS(array);
 DEF_NAPI_VALUE_IS(arraybuffer);
-DEF_NAPI_VALUE_IS(error);
 DEF_NAPI_VALUE_IS(typedarray);
 
 napi_status napi_is_buffer(napi_env env, napi_value value, bool* result) {
@@ -404,18 +387,19 @@ napi_status napi_is_error(napi_env env, napi_value value, bool* result) {
 
 napi_status napi_instanceof(napi_env env, napi_value object,
                             napi_value constructor, bool* result) {
+  NAPI_TRY_ENV(env);
   jerry_value_t jval_object = AS_JERRY_VALUE(object);
   jerry_value_t jval_cons = AS_JERRY_VALUE(constructor);
 
-  return napi_assign_bool(env, jerry_value_instanceof(jval_object, jval_cons),
+  return napi_assign_bool(jerry_value_instanceof(jval_object, jval_cons),
                           result);
 }
 
 napi_status napi_strict_equals(napi_env env, napi_value lhs, napi_value rhs,
                                bool* result) {
+  NAPI_TRY_ENV(env);
   jerry_value_t jval_lhs = AS_JERRY_VALUE(lhs);
   jerry_value_t jval_rhs = AS_JERRY_VALUE(rhs);
 
-  return napi_assign_bool(env, jerry_value_strict_equal(jval_lhs, jval_rhs),
-                          result);
+  return napi_assign_bool(jerry_value_strict_equal(jval_lhs, jval_rhs), result);
 }
