@@ -417,8 +417,8 @@ foreach(MODULE_EXTRA_CMAKE_FILE ${EXTRA_CMAKE_FILES})
 endforeach()
 
 set(IOTJS_NAPI_SRC)
-if (ENABLE_NAPI)
-    file(GLOB IOTJS_NAPI_SRC ${IOTJS_SOURCE_DIR}/napi/*.c)
+if(ENABLE_NAPI)
+  file(GLOB IOTJS_NAPI_SRC ${IOTJS_SOURCE_DIR}/napi/*.c)
 endif()
 
 # Collect all sources into LIB_IOTJS_SRC
@@ -447,6 +447,10 @@ set(IOTJS_INCLUDE_DIRS
   ${MBEDTLS_INCLUDE_DIR}
   ${TUV_INCLUDE_DIR}
 )
+
+if(ENABLE_NAPI)
+  list(APPEND IOTJS_INCLUDE_DIRS ${IOTJS_SOURCE_DIR}/napi)
+endif()
 
 if(NOT BUILD_LIB_ONLY)
   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
