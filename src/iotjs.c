@@ -19,7 +19,9 @@
 #include "iotjs_js.h"
 #include "iotjs_string_ext.h"
 #include "jerryscript-ext/debugger.h"
+#if ENABLE_NAPI
 #include "internal/node_api_internal.h"
+#endif
 #if !defined(__NUTTX__) && !defined(__TIZENRT__)
 #include "jerryscript-port-default.h"
 #endif

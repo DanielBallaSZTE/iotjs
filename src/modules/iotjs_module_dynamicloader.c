@@ -14,7 +14,10 @@
  */
 
 #include <stdlib.h>
+
+#if ENABLE_NAPI
 #include "internal/node_api_internal.h"
+#endif
 
 #include "iotjs_def.h"
 
