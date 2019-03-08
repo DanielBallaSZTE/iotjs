@@ -425,5 +425,8 @@
 #define IOTJS_MAGIC_STRING_TIZEN "tizen"
 #define IOTJS_MAGIC_STRING_APP_CONTROL "appControl"
 #endif
+#if ENABLE_NAPI
+#define IOTJS_MAGIC_STRING_ERROR "Error"
+#endif
 
 #endif /* IOTJS_MAGIC_STRINGS_H */

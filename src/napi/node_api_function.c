@@ -161,8 +161,17 @@ napi_status napi_get_new_target(napi_env env, napi_callback_info cbinfo,
   iotjs_callback_info_t* callback_info = (iotjs_callback_info_t*)cbinfo;
   jerry_value_t jval_this = callback_info->jval_this;
   jerry_value_t jval_target = callback_info->jval_func;
-  bool is_instance = jerry_value_instanceof(jval_this, jval_target);
-  NAPI_ASSIGN(result, is_instance ? AS_NAPI_VALUE(jval_target) : NULL);
+  jerry_value_t is_instance =
+      jerry_binary_operation(JERRY_BIN_OP_INSTANCEOF, jval_this, jval_target);
+  if (jerry_value_is_error(is_instance)) {
+    jerry_release_value(is_instance);
+    NAPI_ASSIGN(result, NULL);
+    NAPI_RETURN(napi_generic_failure);
+  }
+
+  NAPI_ASSIGN(result, jerry_get_boolean_value(is_instance)
+                          ? AS_NAPI_VALUE(jval_target)
+                          : NULL);
   NAPI_RETURN(napi_ok);
 }
 

@@ -191,8 +191,17 @@ napi_status napi_has_element(napi_env env, napi_value object, uint32_t index,
   jerry_value_t jval_object = AS_JERRY_VALUE(object);
   NAPI_TRY_TYPE(object, jval_object);
 
-  return napi_assign_bool(jerry_has_property_by_index(jval_object, index),
-                          result);
+  jerry_value_t prop_name = jerry_create_string ((const jerry_char_t *) '0' + index);
+  jerry_value_t has_prop_val = jerry_has_own_property (jval_object, prop_name);
+  jerry_release_value (prop_name);
+
+  if (jerry_value_is_error(has_prop_val)) {
+    jerry_release_value(has_prop_val);
+    NAPI_RETURN(napi_generic_failure);
+  }
+
+  bool has_prop = jerry_get_boolean_value (has_prop_val);
+  return napi_assign_bool(has_prop, result);
 }
 
 napi_status napi_delete_element(napi_env env, napi_value object, uint32_t index,

@@ -375,13 +375,17 @@ napi_status napi_is_buffer(napi_env env, napi_value value, bool* result) {
 
 napi_status napi_is_error(napi_env env, napi_value value, bool* result) {
   NAPI_TRY_ENV(env);
-  jerry_value_t jval = AS_JERRY_VALUE(value);
   jerry_value_t jval_global = jerry_get_global_object();
-  jerry_value_t jval_error = iotjs_jval_get_property(jval_global, "Error");
-  NAPI_ASSIGN(result, jerry_value_instanceof(jval, jval_error));
+  jerry_value_t jval_error =
+      iotjs_jval_get_property(jval_global, IOTJS_MAGIC_STRING_ERROR);
+
+  napi_status status =
+      napi_instanceof(env, value, AS_NAPI_VALUE(jval_error), result);
+
   jerry_release_value(jval_error);
   jerry_release_value(jval_global);
-  NAPI_RETURN(napi_ok);
+
+  return status;
 }
 
 napi_status napi_instanceof(napi_env env, napi_value object,
@@ -390,8 +394,16 @@ napi_status napi_instanceof(napi_env env, napi_value object,
   jerry_value_t jval_object = AS_JERRY_VALUE(object);
   jerry_value_t jval_cons = AS_JERRY_VALUE(constructor);
 
-  return napi_assign_bool(jerry_value_instanceof(jval_object, jval_cons),
-                          result);
+  jerry_value_t is_instance =
+      jerry_binary_operation(JERRY_BIN_OP_INSTANCEOF, jval_object, jval_cons);
+  if (jerry_value_is_error(is_instance)) {
+    jerry_release_value(is_instance);
+    NAPI_ASSIGN(result, false);
+  } else {
+    NAPI_ASSIGN(result, jerry_get_boolean_value(is_instance));
+  }
+
+  NAPI_RETURN(napi_ok);
 }
 
 napi_status napi_strict_equals(napi_env env, napi_value lhs, napi_value rhs,
@@ -400,5 +412,12 @@ napi_status napi_strict_equals(napi_env env, napi_value lhs, napi_value rhs,
   jerry_value_t jval_lhs = AS_JERRY_VALUE(lhs);
   jerry_value_t jval_rhs = AS_JERRY_VALUE(rhs);
 
-  return napi_assign_bool(jerry_value_strict_equal(jval_lhs, jval_rhs), result);
+  jerry_value_t is_equal =
+      jerry_binary_operation(JERRY_BIN_OP_STRICT_EQUAL, jval_lhs, jval_rhs);
+  if (jerry_value_is_error(is_equal)) {
+    jerry_release_value(is_equal);
+    NAPI_RETURN(napi_generic_failure);
+  }
+
+  return napi_assign_bool(jerry_get_boolean_value(is_equal), result);
 }
