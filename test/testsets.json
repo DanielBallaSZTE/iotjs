@@ -1207,6 +1207,7 @@
     { "name": "test_napi_exception.js" },
     { "name": "test_napi_handle_scope.js" },
     { "name": "test_napi_is_error.js" },
+    { "name": "test_napi_object_wrap.js" },
     { "name": "test_napi_strictequal_and_instanceof.js" },
     { "name": "test_napi_string.js" },
     { "name": "test_napi_throw_error.js" },

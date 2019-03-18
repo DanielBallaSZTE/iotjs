@@ -27,6 +27,10 @@
     {
       "target_name": "test_napi_string",
       "sources": [ "test_napi_string.c" ]
+    },
+    {
+      "target_name": "test_napi_object_wrap",
+      "sources": [ "test_napi_object_wrap.c" ]
     }
   ]
 }

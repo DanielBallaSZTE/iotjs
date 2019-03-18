@@ -227,6 +227,13 @@ JS_FUNCTION(Chdir) {
 }
 
 
+JS_FUNCTION(Gc) {
+  jerry_gc(JERRY_GC_SEVERITY_LOW);
+
+  return jerry_create_undefined();
+}
+
+
 JS_FUNCTION(DoExit) {
   iotjs_environment_t* env = iotjs_environment_get();
 
@@ -368,6 +375,7 @@ jerry_value_t InitProcess(void) {
   iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_CWD, Cwd);
   iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_CHDIR, Chdir);
   iotjs_jval_set_method(process, IOTJS_MAGIC_STRING_DOEXIT, DoExit);
+  iotjs_jval_set_method(process, "gc", Gc);
   iotjs_jval_set_property_jval(process, "pid", jerry_create_number(getpid()));
   SetProcessEnv(process);
 
